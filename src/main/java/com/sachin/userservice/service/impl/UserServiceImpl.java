@@ -46,10 +46,17 @@ public class UserServiceImpl implements UserService {
         user.setEmail(dto.getEmail());
         user.setGender(dto.getGender());
         user.setNicPassportNumber(dto.getNicPassportNumber());
-        user.setNicPassportBackImg(dto.getNicPassportBackImg());
-        user.setNicPassportFrontImg(dto.getNicPassportFrontImg());
+        if (dto.getNicPassportBackImg() != null) {
+            user.setNicPassportBackImg(dto.getNicPassportBackImg());
+        }
+        if (dto.getNicPassportFrontImg() != null) {
+            user.setNicPassportFrontImg(dto.getNicPassportFrontImg());
+        }
+        if (dto.getProfilePicture() != null) {
+            user.setProfilePicture(dto.getProfilePicture());
+        }
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setProfilePicture(dto.getProfilePicture());
+
         user.setUsername(dto.getUsername());
         user.setRemarks(dto.getRemarks());
         user.setDob(dto.getDob());

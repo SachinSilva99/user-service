@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class UserController {
 
     private final UserService userService;
@@ -36,9 +37,6 @@ public class UserController {
     ) {
 
         try {
-            validateImageFile(profilePicture);
-            validateImageFile(nicPassportFrontImg);
-            validateImageFile(nicPassportBackImg);
 
             userDTO.setProfilePicture(encodeToBase64(profilePicture));
             userDTO.setNicPassportFrontImg(encodeToBase64(nicPassportFrontImg));
@@ -71,7 +69,6 @@ public class UserController {
     }
 
 
-
     @GetMapping(value = "/travel/{userId}")
     public ResponseEntity<StandardResponse<UserDTO>> getUserRequestByTravel(@PathVariable String userId) {
         return new ResponseEntity<>(
@@ -83,33 +80,26 @@ public class UserController {
         );
     }
 
-    @PostMapping(value = "/userLogin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StandardResponse<UserDTO>> userLogin(
-            @RequestPart String username,
-            @RequestPart String password
-    ) {
-        userService.login(username, password);
-        return new ResponseEntity<>(
-                new StandardResponse<>(
-                        HttpStatus.OK.value(),
-                        "Ok",
-                        null
-                ), HttpStatus.OK
-        );
-    }
 
     @PutMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StandardResponse<String>> updateUser(
             @Valid @RequestPart UserDTO userDTO,
-            @RequestPart MultipartFile profilePicture,
-            @RequestPart MultipartFile nicPassportFrontImg,
-            @RequestPart MultipartFile nicPassportBackImg,
+            @RequestPart(required = false) MultipartFile profilePicture,
+            @RequestPart(required = false) MultipartFile nicPassportFrontImg,
+            @RequestPart(required = false) MultipartFile nicPassportBackImg,
             @PathVariable String userId
     ) throws IOException {
-
-        userDTO.setProfilePicture(encodeToBase64(profilePicture));
-        userDTO.setNicPassportFrontImg(encodeToBase64(nicPassportFrontImg));
-        userDTO.setNicPassportBackImg(encodeToBase64(nicPassportBackImg));
+        System.out.println("reached put api");
+        if (profilePicture != null) {
+            System.out.println("here");
+            userDTO.setProfilePicture(encodeToBase64(profilePicture));
+        }
+        if (nicPassportBackImg != null) {
+            userDTO.setNicPassportBackImg(encodeToBase64(nicPassportBackImg));
+        }
+        if (nicPassportFrontImg != null) {
+            userDTO.setNicPassportFrontImg(encodeToBase64(nicPassportFrontImg));
+        }
         userService.update(userId, userDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -123,11 +113,13 @@ public class UserController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StandardResponse<List<UserDTO>>> getAllUsers() {
+        System.out.println("get all");
         return new ResponseEntity<>(new StandardResponse<>(200, "OK", userService.getAll()), HttpStatus.OK);
     }
 
 
     private String encodeToBase64(MultipartFile file) throws IOException {
+        validateImageFile(file);
         return Base64.getEncoder().encodeToString(file.getBytes());
     }
 
